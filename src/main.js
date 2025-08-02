@@ -1,19 +1,17 @@
 /* Modules */
 const { app, BrowserWindow, ipcMain, dialog, shell } = require('electron');
-const getLocalPath = require("./local-path").default;
-const YTDlpWrap = require('yt-dlp-wrap').default;
-const ffbinaries = require('ffbinaries-plus');
+const path = require('path');
+const os = require('os');
+const fs = require('fs-extra');
 const fetch = require("node-fetch-commonjs");
 const getLyrics = require('lyrics-snatcher');
 const { exec } = require('child_process');
-const fs = require('fs-extra');
-const path = require('path');
-const os = require('os');
+const YTDlpWrap = require('yt-dlp-wrap').default;
 
 /* Classes */
-const YtDlpWrap = new YTDlpWrap(path.join(getLocalPath("ytm-dlp"), 'yt-dlp/yt-dlp' + (os.platform() === 'win32' ? '.exe' : '')));
+const YtDlpWrap = new YTDlpWrap(path.join(__dirname, 'vendor', 'yt-dlp_macos'));
 Date.prototype.dateNow = function () {
-  return ((this.getDate() < 10) ? "0" : "") + this.getDate() + "-" + this.getMonth() + 1 + "-" + this.getFullYear();
+  return ((this.getDate() < 10) ? "0" : "") + this.getDate() + "-" + (this.getMonth() + 1) + "-" + this.getFullYear();
 }
 Date.prototype.timeNow = function () {
   return ((this.getHours() < 10) ? "0" : "") + this.getHours() + ((this.getMinutes() < 10) ? "0" : "") + this.getMinutes() + ((this.getSeconds() < 10) ? "0" : "") + this.getSeconds();
@@ -24,6 +22,7 @@ const date = new Date()
 let MainWin
 let SetWin
 let UrlWin
+let AboutWin
 /* DO NOT CHANGE */
 
 /* Variables */
@@ -60,28 +59,31 @@ app.whenReady().then(async () => {
   })
 
   ipcMain.on('resetDeps', async () => {
-    fs.rmSync(path.join(getLocalPath("ytm-dlp"), "yt-dlp"), { recursive: true, force: true })
-    fs.rmSync(path.join(getLocalPath("ytm-dlp"), "ffmpeg"), { recursive: true, force: true })
-
-    await getDeps()
+    // No longer downloads deps; assumes static binaries in /vendor
+    // But you can add any reset logic here if needed
   })
 
   ipcMain.on('changeStyle', (_event, style) => {
-    let config = JSON.parse(fs.readFileSync(path.join(getLocalPath("ytm-dlp"), "config.json"), 'utf-8'))
+    let configPath = path.join(__dirname, "config.json");
+    let config = {}
+    if (fs.existsSync(configPath)) {
+      config = JSON.parse(fs.readFileSync(configPath, 'utf-8'))
+    }
     config.style = style
-
-    fs.writeFileSync(path.join(getLocalPath("ytm-dlp"), "config.json"), JSON.stringify(config))
-
+    fs.writeFileSync(configPath, JSON.stringify(config))
     MainWin.reload()
     AboutWin.reload()
   })
 
   ipcMain.on('recieveLanguage', (_event, lang) => {
     if (lang !== language.current) {
-      let config = JSON.parse(fs.readFileSync(path.join(getLocalPath("ytm-dlp"), "config.json")))
+      let configPath = path.join(__dirname, "config.json");
+      let config = {}
+      if (fs.existsSync(configPath)) {
+        config = JSON.parse(fs.readFileSync(configPath))
+      }
       config.lang = lang
-
-      fs.writeFileSync(path.join(getLocalPath("ytm-dlp"), "config.json"), JSON.stringify(config))
+      fs.writeFileSync(configPath, JSON.stringify(config))
 
       app.relaunch()
       app.quit()
@@ -92,12 +94,14 @@ app.whenReady().then(async () => {
     fetch(artURL)
       .then((response) => response.buffer())
       .then((buffer) => {
-        if (!fs.existsSync(path.join(os.tmpdir(), '/ytm-dlp-images/'))) { fs.mkdirSync(path.join(os.tmpdir(), '/ytm-dlp-images/')) }
+        const artDir = path.join(os.tmpdir(), 'ytm-dlp-images');
+        if (!fs.existsSync(artDir)) { fs.mkdirSync(artDir) }
 
-        fs.writeFileSync(path.join(os.tmpdir(), '/ytm-dlp-images/art'), buffer)
+        const artPath = path.join(artDir, 'art');
+        fs.writeFileSync(artPath, buffer)
 
-        SetWin.webContents.send('sendArt', path.join(os.tmpdir(), '/ytm-dlp-images/art'))
-        customArt = path.join(os.tmpdir(), '/ytm-dlp-images/art')
+        SetWin.webContents.send('sendArt', artPath)
+        customArt = artPath
       })
       .catch((err) => {
         throwErr(err)
@@ -115,7 +119,6 @@ app.whenReady().then(async () => {
     }).then((e) => { if (!e.canceled) { SetWin.webContents.send('sendArt', e.filePaths[0]); customArt = e.filePaths[0] } })
   })
 
-  await getDeps()
   getLang()
   createMain()
 
@@ -140,7 +143,7 @@ const createMain = () => {
     },
     menuBarVisible: false,
     show: false,
-    icon: path.join(__dirname, 'images/icon.png'),
+    icon: path.join(__dirname, 'images', 'icon.png'),
     webPreferences: {
       preload: path.join(__dirname, 'preload.js')
     }
@@ -193,7 +196,7 @@ const createUrl = () => {
     parent: SetWin,
     modal: true,
     show: false,
-    icon: path.join(__dirname, 'images/icon.png'),
+    icon: path.join(__dirname, '/images/icon.png'),
     webPreferences: {
       preload: path.join(__dirname, 'preload.js')
     }
@@ -218,7 +221,7 @@ const createAbout = () => {
     },
     parent: MainWin,
     modal: true,
-    show: false,
+    show: true,
     icon: path.join(__dirname, 'images/icon.png'),
     webPreferences: {
       preload: path.join(__dirname, 'preload.js')
@@ -236,30 +239,35 @@ const createAbout = () => {
 
 /* Get info */
 const getLang = () => {
-  if (!fs.existsSync(path.join(getLocalPath("ytm-dlp"), "config.json")) || fs.readFileSync(path.join(getLocalPath("ytm-dlp"), "config.json"), 'utf-8') === '') {
-    fs.writeFileSync(path.join(getLocalPath("ytm-dlp"), "config.json"), `{"lang": "en", "style": "mocha"}`)
+  const configPath = path.join(__dirname, "config.json");
+  if (!fs.existsSync(configPath) || fs.readFileSync(configPath, 'utf-8') === '') {
+    fs.writeFileSync(configPath, `{"lang": "en", "style": "mocha"}`)
   }
 
-  let local = JSON.parse(fs.readFileSync(path.join(getLocalPath("ytm-dlp"), "config.json")))
+  let local = JSON.parse(fs.readFileSync(configPath))
   language = JSON.parse(fs.readFileSync(path.join(__dirname, '/lang/', local.lang + '.json')))
 }
 
 const getStyles = () => {
-  if (!fs.existsSync(path.join(getLocalPath('ytm-dlp'), 'styles/mocha.css'))) {
-    fs.copyFile(path.join(__dirname, 'styles/mocha.css'), path.join(getLocalPath('ytm-dlp'), 'styles/mocha.css'))
+  const stylesDir = path.join(__dirname, 'styles');
+  const destStylesDir = path.join(__dirname, 'styles')
+
+  if (!fs.existsSync(destStylesDir)) {
+    fs.copyFileSync(path.join(stylesDir, 'mocha.css'), path.join(destStylesDir, 'mocha.css'))
   }
 
-  let files = fs.readdirSync(path.join(getLocalPath('ytm-dlp'), 'styles'), { withFileTypes: false })
+  let files = fs.readdirSync(destStylesDir, { withFileTypes: false })
   files = files.filter(e => { return e.search(/\.css/) !== -1 })
   let styles = files.map(e => { return e.replace(/\.css/, '') })
 
-  let data = fs.readFileSync(path.join(getLocalPath("ytm-dlp"), "config.json"), 'utf-8')
+  let data = fs.readFileSync(path.join(__dirname, "config.json"), 'utf-8')
   let currentStyle = JSON.parse(data).style
 
-  if (fs.existsSync(path.join(getLocalPath('ytm-dlp'), 'styles', currentStyle + '.css'))) {
-    var currentStylePath = path.join(getLocalPath('ytm-dlp'), 'styles', currentStyle + '.css')
+  let currentStylePath
+  if (fs.existsSync(path.join(destStylesDir, currentStyle + '.css'))) {
+    currentStylePath = path.join(destStylesDir, currentStyle + '.css')
   } else {
-    var currentStylePath = path.join(getLocalPath('ytm-dlp'), 'styles/mocha.css')
+    currentStylePath = path.join(destStylesDir, 'mocha.css')
     currentStyle = "mocha"
   }
 
@@ -267,189 +275,13 @@ const getStyles = () => {
 }
 
 const getMetadata = async (videoURL) => {
-  if (videoURL === currentVideo && Object.keys(changedMetadata).length === 0) {
-    SetWin.webContents.send('sendMetadata', metadata)
-    return
-  }
-  else if (Object.keys(changedMetadata).length !== 0) {
-    SetWin.webContents.send('sendMetadata', changedMetadata)
-    return
-  }
-
-  rawMetadata = await YtDlpWrap.getVideoInfo(videoURL)
-
-  if (rawMetadata.artist) {
-    metadata.track = rawMetadata.track
-    metadata.artist = rawMetadata.artist
-    metadata.album = rawMetadata.album
-    metadata.upload_year = rawMetadata.description.match(/(?<=Released on: )[0-9]{4}/gm) ? rawMetadata.description.match(/(?<=Released on: )[0-9]{4}/gm) : rawMetadata.description.match(/(?<=℗ )[0-9]{4}/gm)
-    metadata.album_artist = rawMetadata.album_artist ? rawMetadata.album_artist : rawMetadata.artist
-  }
-  else {
-    metadata.track = rawMetadata.title
-    metadata.artist = rawMetadata.uploader
-    metadata.album = ""
-    metadata.upload_year = rawMetadata.upload_date.match(/^\d{4}/gm)
-    metadata.album_artist = rawMetadata.album_artist ? rawMetadata.album_artist : rawMetadata.uploader
-  }
-
-  metadata.genre = rawMetadata.genre ? rawMetadata.genre : ""
-  metadata.art = rawMetadata['thumbnails'].pop()['url']
-  currentVideo = videoURL
-
-  SetWin.webContents.send('sendMetadata', metadata)
-}
-
-const getDeps = async () => {
-  if (!fs.existsSync(path.join(getLocalPath("ytm-dlp"), "yt-dlp"))) {
-    fs.mkdir(path.join(getLocalPath("ytm-dlp"), "yt-dlp"), { recursive: true }, (err) => { if (err) { throwErr(err) } })
-  }
-
-  if (!fs.existsSync(path.join(getLocalPath("ytm-dlp"), 'yt-dlp/yt-dlp' + (os.platform() === 'win32' ? '.exe' : '')))) {
-    await YTDlpWrap.downloadFromGithub(path.join(getLocalPath("ytm-dlp"), 'yt-dlp/yt-dlp' + (os.platform() === 'win32' ? '.exe' : '')))
-  }
-  else {
-    exec(path.join(getLocalPath("ytm-dlp"), "yt-dlp/yt-dlp"), async (_error, _stdout, stderr) => {
-      if (!stderr.includes('Usage:')) {
-        throwErr('YT-DLP executable error')
-
-        fs.unlinkSync(path.join(getLocalPath("ytm-dlp"), "yt-dlp/yt-dlp" + (os.platform() === 'win32' ? '.exe' : '')))
-        await YTDlpWrap.downloadFromGithub(path.join(getLocalPath("ytm-dlp"), "yt-dlp/yt-dlp" + (os.platform() === 'win32' ? '.exe' : '')))
-      }
-    })
-  }
-
-  if (!fs.existsSync(path.join(getLocalPath("ytm-dlp"), "yt-dlp/arguments.list"))) {
-    fs.readFile(path.join(__dirname, 'arguments.list'), 'utf-8', (err, data) => {
-      if (err) { throwErr(err) }
-
-      data = data.replace(/<ffmpeg_directory>/, path.join(getLocalPath("ytm-dlp"), "ffmpeg"))
-
-      fs.writeFile(path.join(getLocalPath('ytm-dlp'), 'yt-dlp/arguments.list'), data, (err) => { if (err) { throwErr(err) } })
-    })
-  }
-
-  if (!fs.existsSync(path.join(getLocalPath('ytm-dlp'), 'styles')) || fs.readdirSync(path.join(getLocalPath('ytm-dlp'), 'styles')) === '') {
-    fs.copy(path.join(__dirname, 'styles'), path.join(getLocalPath('ytm-dlp'), 'styles'), { recursive: true }, (err) => {
-      if (err) { throwErr(err) }
-
-      fs.chmod(path.join(getLocalPath('ytm-dlp'), 'styles'), '755')
-    })
-  }
-
-  ffbinaries.downloadBinaries(['ffmpeg', 'ffprobe'], { destination: path.join(getLocalPath("ytm-dlp"), "ffmpeg") }, (err) => {
-    if (err) { throwErr(err) }
-
-    exec(path.join(getLocalPath("ytm-dlp"), "ffmpeg/ffmpeg"), async (_error, _stdout, stderr) => {
-      if (!stderr.includes('ffmpeg version')) {
-        throwErr('FFMpeg executable error')
-
-        fs.unlinkSync(path.join(getLocalPath("ytm-dlp"), "ffmpeg/ffmpeg" + (os.platform() === 'win32' ? '.exe' : '')))
-
-        ffbinaries.downloadBinaries(['ffmpeg'], { destination: path.join(getLocalPath("ytm-dlp"), "ffmpeg") }, (err) => { if (err) { throwErr(err) } })
-      }
-    })
-
-    exec(path.join(getLocalPath("ytm-dlp"), "ffmpeg/ffprobe"), async (_error, _stdout, stderr) => {
-      if (!stderr.includes('ffprobe version')) {
-        throwErr('FFProbe executable error')
-
-        fs.unlinkSync(path.join(getLocalPath("ytm-dlp"), "ffmpeg/ffprobe" + (os.platform() === 'win32' ? '.exe' : '')))
-
-        ffbinaries.downloadBinaries(['ffprobe'], { destination: path.join(getLocalPath("ytm-dlp"), "ffmpeg") }, (err) => { if (err) { throwErr(err) } })
-      }
-    })
-  })
+  
 }
 
 /* General functions */
 const startDownload = async (_event, videoURL, dirPath, ext, order) => {
-  let arguments = fs.readFileSync(path.join(getLocalPath("ytm-dlp"), "yt-dlp/arguments.list"), 'UTF-8').split(/\n/).map(e => { return e.replace(/"/g, '') })
-
-  if (Object.keys(changedMetadata).length !== 0) {
-    for (let i = 0; i < 12; i++) {
-      arguments.pop()
-    }
-
-    if (customArt) {
-      arguments.push(
-        '--ppa', `ThumbnailsConvertor+ffmpeg_i: -i '${customArt}'`,
-      )
-
-      customArt = null
-    }
-
-    if (changedMetadata.lyrics !== 'none' && ext !== 'mp3') {
-      let lrc = await getLyrics(changedMetadata.track, changedMetadata.artist.replace(/(,[a-zа-яА-ЯA-Z0-9_ ]).*/g, ''), changedMetadata.album, `${rawMetadata.duration}`)
-      if (lrc.plain === null) {
-        lrc = await getLyrics(changedMetadata.track, changedMetadata.artist.replace(/(,[a-zа-яА-ЯA-Z0-9_ ]).*/g, ''), ' ', `${rawMetadata.duration}`)
-      }
-
-      if (lrc instanceof Error) {
-        throwErr(lrc)
-      }
-      else {
-        arguments.push(
-          "--parse-metadata", "NA:(?P<meta_lyrics>.*)",
-          "--replace-in-metadata", "meta_lyrics", "NA"
-        )
-
-        if (changedMetadata.lyrics === 'sync' && lrc.synced !== null) {
-          arguments.push(lrc.synced)
-        }
-        else if (lrc.plain !== null) {
-          arguments.push(lrc.plain)
-        }
-        else {
-          arguments.push("")
-        }
-      }
-    }
-
-    arguments.push(
-      '--parse-metadata', "NA:%(meta_title)s",
-      '--parse-metadata', "NA:%(title)s",
-      '--parse-metadata', "NA:%(meta_artist)s",
-      '--parse-metadata', "NA:%(artist)s",
-      '--parse-metadata', "NA:%(uploader)s",
-      '--parse-metadata', "NA:%(album_artist)s",
-      '--parse-metadata', "NA:%(meta_album)s",
-      '--parse-metadata', "NA:%(meta_date)s",
-      '--parse-metadata', "NA:%(genre)s",
-
-      '--replace-in-metadata', 'meta_title', 'NA', changedMetadata.track,
-      '--replace-in-metadata', 'title', 'NA', changedMetadata.track,
-      '--replace-in-metadata', 'meta_artist', 'NA', changedMetadata.artist,
-      '--replace-in-metadata', 'artist', 'NA', changedMetadata.artist,
-      '--replace-in-metadata', 'uploader', 'NA', changedMetadata.artist,
-      '--replace-in-metadata', 'album_artist', 'NA', changedMetadata.album_artist,
-      '--replace-in-metadata', 'meta_album', 'NA', changedMetadata.album,
-      '--replace-in-metadata', 'meta_date', 'NA', changedMetadata.upload_year,
-      '--replace-in-metadata', 'genre', 'NA', changedMetadata.genre
-    )
-  }
-
-  if (fs.existsSync(dirPath)) {
-    for (let i = 0; i < 2; i++) {
-      arguments.shift()
-    }
-
-    arguments.unshift(
-      '-o', `${dirPath}\\%(artist,uploader)s - %(title,meta_title)s.%(ext)s`
-    )
-  }
-
-  if (order === 'strict') {
-    arguments.push(
-      '--parse-metadata', "playlist_index:%(track_number)s",
-    )
-  }
-
-  arguments.push(
-    '--audio-format', ext,
-    videoURL
-  )
-
+  arguments = ['-x', '--ffmpeg-location', `${path.join(__dirname, 'vendor', 'ffmpeg')}`, '--audio-format', 'mp3','--embed-metadata', '--embed-thumbnail', `${videoURL}`]
+  console.log(arguments)
   YtDlpWrap.exec(arguments)
     .on('ytDlpEvent', (eType, eData) => {
       console.log('[' + eType + ']', eData)
@@ -464,8 +296,9 @@ const startDownload = async (_event, videoURL, dirPath, ext, order) => {
       logStream.write('\n')
 
       MainWin.webContents.send('sendDownloadFinished');
-      if (fs.existsSync(path.join(os.tmpdir(), '/ytm-dlp-images/art'))) {
-        fs.unlink(path.join(os.tmpdir(), '/ytm-dlp-images/art'), (err) => { if (err) { throwErr(err) } })
+      const artFile = path.join(os.tmpdir(), 'ytm-dlp-images', 'art')
+      if (fs.existsSync(artFile)) {
+        fs.unlink(artFile, (err) => { if (err) { throwErr(err) } })
       }
     })
 

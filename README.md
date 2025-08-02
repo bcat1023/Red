@@ -1,12 +1,15 @@
-# ytm-dlp-gui 
+# This was just forked from ytm-dlp and is still in progress
+
+# Red Music Hoarder
 <!-- ![logo](https://raw.githubusercontent.com/RENOMIZER/ytm-dlp-gui/main/src/images/icon.ico) -->
 
-> An ElectronJS app for downloading music off Youtube Music
+> Red Music Hoarder (or Red for short) makes it easy to get mp3 files for your iPod of Youtube Music
+
+*Future releases will include better metadata tagging...*
 
 [![License](https://img.shields.io/badge/License-MIT-green)](https://github.com/RENOMIZER/ytm-dlp-gui/blob/main/LICENSE)
 
-This app allows you to download audio off YouTube and YouTube Music in best quality available, 
-change its metadata (such as title, artist's name, and genre) and save it in MP3, OPUS, M4A or FLAC format.
+This app allows you to download audio off YouTube and YouTube Music and get it ready to save to your iPod.
 
 ## How to use it?
 
