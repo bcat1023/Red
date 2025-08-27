@@ -10,7 +10,6 @@ contextBridge.exposeInMainWorld('electronAPI', {
   sendLanguage: (lang) => ipcRenderer.send('recieveLanguage', lang),
   sendChooseDirectory: () => ipcRenderer.send('chooseDirectory'),
   sendReloadMetadata: () => ipcRenderer.send('reloadMetadata'),
-  sendResetDependencies: () => ipcRenderer.send('resetDeps'),
   sendGetLanguage: () => ipcRenderer.invoke('getLanguage'),
   sendGetStyles: () => ipcRenderer.invoke('getStyles'),
   sendOpenAbout: () => ipcRenderer.send('openAbout'),
@@ -22,6 +21,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   onDownloadError: (callback) => ipcRenderer.on('sendDownloadError', callback),
   onRecieveDirectory: (callback) => ipcRenderer.on('sendDirectory', callback),
   onRecieveMetadata: (callback) => ipcRenderer.on('sendMetadata', callback),
+  onRecieveItems: (callback) => ipcRenderer.on('sendItems', callback),
 	onRecieveProgress: (callback) => ipcRenderer.on('sendProgress', callback),
   onRecieveArt: (callback) => ipcRenderer.on('sendArt', callback),
 })

@@ -58,11 +58,6 @@ app.whenReady().then(async () => {
     }).then((e) => { if (!e.canceled) { MainWin.webContents.send('sendDirectory', e.filePaths[0]) } })
   })
 
-  ipcMain.on('resetDeps', async () => {
-    // No longer downloads deps; assumes static binaries in /vendor
-    // But you can add any reset logic here if needed
-  })
-
   ipcMain.on('changeStyle', (_event, style) => {
     let configPath = path.join(__dirname, "config.json");
     let config = {}
@@ -213,7 +208,7 @@ const createAbout = () => {
     height: 600,
     resizable: false,
     title: language.about,
-    titleBarStyle: 'hidden',
+    titleBarStyle: 'shown',
     titleBarOverlay: {
       color: '#00000000',
       symbolColor: '#707070',
@@ -280,7 +275,7 @@ const getMetadata = async (videoURL) => {
 
 /* General functions */
 const startDownload = async (_event, videoURL, dirPath, ext, order) => {
-  arguments = ['-x', '--ffmpeg-location', `${path.join(__dirname, 'vendor', 'ffmpeg')}`, '--audio-format', 'mp3','--embed-metadata', '--embed-thumbnail', `${videoURL}`]
+  arguments = ['-t', 'sleep', '-4', '-x', '--ffmpeg-location', `${path.join(__dirname, 'vendor', 'ffmpeg')}`, '--audio-format', 'mp3','--embed-metadata', '--embed-thumbnail', `${videoURL}`]
   console.log(arguments)
   YtDlpWrap.exec(arguments)
     .on('ytDlpEvent', (eType, eData) => {
@@ -289,6 +284,9 @@ const startDownload = async (_event, videoURL, dirPath, ext, order) => {
 
       if (eType === 'download' && eData.slice(1, 4) !== 'Des' && eData.slice(4, 5) === '.') {
         MainWin.webContents.send('sendProgress', eData.slice(1, 4))
+      }
+      if(eType === 'download' && eData.slice(1,18) === 'Downloading item ') {
+        MainWin.webContents.send('sendItems', eData.slice(18, Number.POSITIVE_INFINITY))
       }
     })
     .on('error', (err) => { MainWin.webContents.send('sendDownloadError'); throwErr(err) })

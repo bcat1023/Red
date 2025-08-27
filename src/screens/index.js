@@ -2,7 +2,7 @@ let language
 
 /* Listeners */
 document.getElementById('dlButton').addEventListener('click', downloadStart)
-document.getElementById('setButton').addEventListener('click', settingsOpen)
+//document.getElementById('setButton').addEventListener('click', settingsOpen)
 document.getElementById('aboutButton').addEventListener('click', () => { window.electronAPI.sendOpenAbout() })
 document.getElementById('locButton').addEventListener('click', () => { window.electronAPI.sendChooseDirectory() })
 
@@ -21,8 +21,6 @@ window.onload = async () => {
   document.getElementById('setButton').title = language.settings
   document.getElementById('locButton').title = language.dlfolder
   document.getElementById('waitingLabel').textContent = language.waiting
-  document.getElementById('extTitle').textContent = language.extension
-  document.getElementById('ordTitle').textContent = language.order
 }
 
 window.electronAPI.onDownloadFinished(() => {
@@ -40,8 +38,12 @@ window.electronAPI.onDownloadError(() => {
   }, 2500)
 })
 
+window.electronAPI.onRecieveItems((_event, items) => {
+  document.getElementById('itemLabel').innerText = language.downloading + ` ${items}`
+})
+
 window.electronAPI.onRecieveProgress((_event, prog) => {
-  document.getElementById('waitingLabel').textContent = language.downloading + ` ${prog}%`
+  document.getElementById('waitingLabel').textContent = `${prog}%`
 })
 
 window.electronAPI.onRecieveDirectory((_event, path) => {
@@ -57,7 +59,7 @@ function downloadStart() {
     return
   }
 
-  window.electronAPI.sendStartDownload(videoURL.replace(/&list.*/gm, ''), document.getElementById('inputLocation').value, document.getElementById('extVal').value, document.getElementById('ordSelect').value)
+  window.electronAPI.sendStartDownload(videoURL.replace(/&list.*/gm, ''), document.getElementById('inputLocation').value, 'mp3', 'ord')
   document.getElementById('dlButton').setAttribute('disabled', true)
   document.getElementById('waitingLabel').textContent = language.downloading
   document.getElementById('inputURL').value = ''

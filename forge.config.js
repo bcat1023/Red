@@ -1,7 +1,7 @@
 module.exports = {
   packagerConfig: {
     asar: true,
-    icon: 'src/images/icon',
+    icon: 'src/images/icon.png',
     executableName: 'Red Music Hoarder',
     name: 'Red Music Hoarder',
   },

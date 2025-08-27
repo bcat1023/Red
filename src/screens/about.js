@@ -1,5 +1,3 @@
-document.getElementById('resetButton').addEventListener('click', () => {window.electronAPI.sendResetDependencies()})
-
 window.onload = async () => {
   let language = await window.electronAPI.sendGetLanguage()
   let [ currentStyle, styles, currentStylePath ] = await window.electronAPI.sendGetStyles()
@@ -17,7 +15,6 @@ window.onload = async () => {
   node.setAttribute('href', currentStylePath)
   document.querySelector("head").appendChild(node)
 
-  document.getElementById('resetButton').title = language.resdep
   document.getElementById('header').textContent = language.about
   document.getElementById('langTxt').textContent = language.language + ':'
   document.getElementById('styleTxt').textContent = language.style + ':'
