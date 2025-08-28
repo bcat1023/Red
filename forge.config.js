@@ -1,9 +1,16 @@
 module.exports = {
   packagerConfig: {
     asar: true,
-    icon: 'src/images/icon.png',
+    icon: 'src/images/icon',
     executableName: 'Red Music Hoarder',
     name: 'Red Music Hoarder',
+    extraResource: [
+      './vendor/yt-dlp_macos',
+      './vendor/ffmpeg'
+    ],
+    asar: {
+      unpackDir: 'resources'
+    }
   },
   rebuildConfig: {},
   makers: [

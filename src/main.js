@@ -9,7 +9,13 @@ const { exec } = require('child_process');
 const YTDlpWrap = require('yt-dlp-wrap').default;
 
 /* Classes */
-const YtDlpWrap = new YTDlpWrap(path.join(__dirname, 'vendor', 'yt-dlp_macos'));
+let bin;
+if (app.isPackaged) {
+  bin = process.resourcesPath;
+} else {
+  bin = __dirname + '/vendor/';
+}
+const YtDlpWrap = new YTDlpWrap(path.join(bin, 'yt-dlp_macos'));
 Date.prototype.dateNow = function () {
   return ((this.getDate() < 10) ? "0" : "") + this.getDate() + "-" + (this.getMonth() + 1) + "-" + this.getFullYear();
 }
@@ -275,7 +281,7 @@ const getMetadata = async (videoURL) => {
 
 /* General functions */
 const startDownload = async (_event, videoURL, dirPath, ext, order) => {
-  arguments = ['-t', 'sleep', '-4', '-x', '--ffmpeg-location', `${path.join(__dirname, 'vendor', 'ffmpeg')}`, '--audio-format', 'mp3','--embed-metadata', '--embed-thumbnail', `${videoURL}`]
+  arguments = ['-t', 'sleep', '-4', '-x', '--ffmpeg-location', `${path.join(bin, 'ffmpeg')}`, '--audio-format', 'mp3','--embed-metadata', '--embed-thumbnail', `${videoURL}`, '-P', `${dirPath}`]
   console.log(arguments)
   YtDlpWrap.exec(arguments)
     .on('ytDlpEvent', (eType, eData) => {

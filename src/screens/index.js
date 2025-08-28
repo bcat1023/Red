@@ -2,7 +2,6 @@ let language
 
 /* Listeners */
 document.getElementById('dlButton').addEventListener('click', downloadStart)
-//document.getElementById('setButton').addEventListener('click', settingsOpen)
 document.getElementById('aboutButton').addEventListener('click', () => { window.electronAPI.sendOpenAbout() })
 document.getElementById('locButton').addEventListener('click', () => { window.electronAPI.sendChooseDirectory() })
 
@@ -18,7 +17,6 @@ window.onload = async () => {
 
   document.getElementById('aboutButton').title = language.about
   document.getElementById('dlButton').title = language.download
-  document.getElementById('setButton').title = language.settings
   document.getElementById('locButton').title = language.dlfolder
   document.getElementById('waitingLabel').textContent = language.waiting
 }
@@ -53,13 +51,17 @@ window.electronAPI.onRecieveDirectory((_event, path) => {
 /* Listeners' functions */
 function downloadStart() {
   let videoURL = document.getElementById('inputURL').value
+  let destination = document.getElementById('inputLocation').value
 
   if (videoURL.search(/(youtube|youtu)\.(com|be)/gm) === -1) {
     document.getElementById('inputURL').value = ''
     return
   }
 
-  window.electronAPI.sendStartDownload(videoURL.replace(/&list.*/gm, ''), document.getElementById('inputLocation').value, 'mp3', 'ord')
+  if(destination === '') {
+    return alert('You must set a file destination')
+  }
+  window.electronAPI.sendStartDownload(videoURL.replace(/&list.*/gm, ''), destination, 'mp3', 'ord')
   document.getElementById('dlButton').setAttribute('disabled', true)
   document.getElementById('waitingLabel').textContent = language.downloading
   document.getElementById('inputURL').value = ''
