@@ -1,6 +1,6 @@
 {
   "name": "Red",
-  "version": "2.0.1",
+  "version": "2.0.1-a",
   "description": "An ElectronJS app for downloading music off Youtube Music",
   "main": "src/main.js",
   "scripts": {
