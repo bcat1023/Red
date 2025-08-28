@@ -16,7 +16,7 @@
     "@electron-forge/maker-squirrel": "^6.4.1",
     "@electron-forge/plugin-auto-unpack-natives": "^6.4.1",
     "@electron-forge/publisher-github": "^6.4.2",
-    "electron": "^26.6.10"
+    "electron": "^28.3.2"
   },
   "dependencies": {
     "electron-squirrel-startup": "^1.0.0",
