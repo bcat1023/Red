@@ -281,7 +281,7 @@ const getMetadata = async (videoURL) => {
 
 /* General functions */
 const startDownload = async (_event, videoURL, dirPath, ext, order) => {
-  arguments = ['-t', 'sleep', '-4', '-x', '--ffmpeg-location', `${path.join(bin, 'ffmpeg')}`, '--audio-format', 'mp3','--embed-metadata', '--embed-thumbnail', `${videoURL}`, '-P', `${dirPath}`]
+  arguments = ['-t', 'sleep', '--ppa', "EmbedThumbnail+ffmpeg_o:-c:v mjpeg -vf crop=\"'if(gt(ih,iw),iw,ih)':'if(gt(iw,ih),ih,iw)'\"", '-x', '--ffmpeg-location', `${path.join(bin, 'ffmpeg')}`, '--audio-format', 'mp3','--embed-metadata', '--embed-thumbnail', `${videoURL}`, '-P', `${dirPath}`, '-o', '%(track)s.%(ext)s', '--parse-metadata', 'uploader:(?P<album_artist>.+)']
   console.log(arguments)
   YtDlpWrap.exec(arguments)
     .on('ytDlpEvent', (eType, eData) => {
