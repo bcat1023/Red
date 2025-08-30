@@ -132,10 +132,10 @@ app.whenReady().then(async () => {
 /* Window creation */
 const createMain = () => {
   MainWin = new BrowserWindow({
-    width: 800,
-    minWidth: 400,
+    width: 1100,
+    minWidth: 880,
     height: 600,
-    minHeight: 300,
+    minHeight: 480,
     titleBarStyle: 'hidden',
     titleBarOverlay: {
       color: '#00000000',
