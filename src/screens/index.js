@@ -1,7 +1,6 @@
 let language
 
 /* Listeners */
-document.getElementById('dlButton').addEventListener('click', downloadStart)
 document.getElementById('aboutButton').addEventListener('click', () => { window.electronAPI.sendOpenAbout() })
 document.getElementById('locButton').addEventListener('click', () => { window.electronAPI.sendChooseDirectory() })
 document.getElementById('pageNext-0').addEventListener('click', () => page('setDestination'))
@@ -64,9 +63,6 @@ function downloadStart() {
     return
   }
 
-  if (destination === '') {
-    return alert('You must set a file destination')
-  }
   window.electronAPI.sendStartDownload(videoURL.replace(/&list.*/gm, ''), destination, 'mp3', 'ord')
   document.getElementById('dlButton').setAttribute('disabled', true)
   document.getElementById('waitingLabel').textContent = language.downloading
@@ -104,12 +100,28 @@ function page(pageCall) {
     })
   }
   if (pageCall === 'setUrl') {
-    changeCard(2)
+    let destination = document.getElementById('inputLocation').value
+    if (destination === '') {
+      return alert('You must set a file destination')
+    } else {
+      changeCard(2)
+    }
   }
   if (pageCall === 'setDestination') {
     changeCard(1)
   }
   if (pageCall === 'setDownloading') {
-    changeCard(3)
+    let destination = document.getElementById('inputURL').value
+    if (destination === '') {
+      return alert('You must set a URL')
+    } else {
+      if (destination.search(/(youtube|youtu)\.(com|be)/gm) === -1) {
+        document.getElementById('inputURL').value = ''
+        return
+      } else {
+        changeCard(3)
+        return downloadStart()
+      }
+    }
   }
 }
