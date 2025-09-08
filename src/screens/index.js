@@ -4,6 +4,9 @@ let language
 document.getElementById('dlButton').addEventListener('click', downloadStart)
 document.getElementById('aboutButton').addEventListener('click', () => { window.electronAPI.sendOpenAbout() })
 document.getElementById('locButton').addEventListener('click', () => { window.electronAPI.sendChooseDirectory() })
+document.getElementById('pageNext-0').addEventListener('click', () => page('setDestination'))
+document.getElementById('pageNext-1').addEventListener('click', () => page('setUrl'))
+document.getElementById('dlButton').addEventListener('click', () => page('setDownloading'))
 
 window.onload = async () => {
   language = await window.electronAPI.sendGetLanguage()
@@ -58,7 +61,7 @@ function downloadStart() {
     return
   }
 
-  if(destination === '') {
+  if (destination === '') {
     return alert('You must set a file destination')
   }
   window.electronAPI.sendStartDownload(videoURL.replace(/&list.*/gm, ''), destination, 'mp3', 'ord')
@@ -79,4 +82,31 @@ function settingsOpen() {
   }
 
   window.electronAPI.sendClickedSettings(videoURL.replace(/&list.*/gm, ''))
+}
+
+// Card/page system
+/*
+  This should probably be rewritten soon for efficiency and scalability purposes, I swear I can write better JS than this lol
+ */
+function page(pageCall) {
+  var pageCall
+  function changeCard(cardInt) {
+    var card = [document.getElementById('card0'), document.getElementById('card1'), document.getElementById('card2'), document.getElementById('card3')]
+    card.forEach((currentCard, index) => {
+      if (index === cardInt) {
+        card[index].style.display = 'block'
+      } else {
+        currentCard.style.display = 'none'
+      }
+    })
+  }
+  if (pageCall === 'setUrl') {
+    changeCard(2)
+  }
+  if (pageCall === 'setDestination') {
+    changeCard(1)
+  }
+  if (pageCall === 'setDownloading') {
+    changeCard(3)
+  }
 }

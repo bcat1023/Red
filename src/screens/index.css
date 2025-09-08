@@ -27,7 +27,7 @@ body {
 
 .flexBox {
 	display: flex;
-    padding-top: 40vmin;
+    padding-top: 32vmin;
     align-content: center;
     justify-content: center;
     align-items: center;
@@ -40,6 +40,8 @@ body {
 	margin-left: 3%;
 	margin-right: 3%;
 	display: none;
+	overflow: hidden;
+	transition: 1s;
 }
 
 .cardDefault {
@@ -50,6 +52,8 @@ body {
 	width: 50%;
 }
 
+.right {display: none;} /* Until this is used or needed it will remain disabled */
+
 h1 {
 	text-align: left;
 }
@@ -59,13 +63,8 @@ h1 {
 	height: 100%;
 	padding-top: 40vmin;
 	display: flex;
+	display: none;
 	flex-direction: column;
-	justify-content: center;
-	align-items: center;
-}
-
-.button-container {
-	display: flex;
 	justify-content: center;
 	align-items: center;
 }
@@ -79,7 +78,6 @@ h1 {
 
 .act-button {
 	height: 6vmin;
-	width: 6vmin;
 	border: none;
 	border-radius: 0.6vmin;
 	color: var(--light-text-color);
@@ -108,7 +106,6 @@ h1 {
 	border-radius: 0.6vmin;
 	padding-left: 1.5vmin;
 	padding-right: 1.5vmin;
-	margin-left: 1vmin;
 	margin-right: 1vmin;
 	font-size: 2.75vmin;
 	font-weight: bold;
