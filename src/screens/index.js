@@ -5,6 +5,8 @@ document.getElementById('dlButton').addEventListener('click', downloadStart)
 document.getElementById('aboutButton').addEventListener('click', () => { window.electronAPI.sendOpenAbout() })
 document.getElementById('locButton').addEventListener('click', () => { window.electronAPI.sendChooseDirectory() })
 document.getElementById('pageNext-0').addEventListener('click', () => page('setDestination'))
+document.getElementById('backButton').addEventListener('click', () => page('setDestination'))
+document.getElementById('resetButton').addEventListener('click', () => page('setDestination'))
 document.getElementById('pageNext-1').addEventListener('click', () => page('setUrl'))
 document.getElementById('dlButton').addEventListener('click', () => page('setDownloading'))
 
@@ -26,8 +28,9 @@ window.onload = async () => {
 
 window.electronAPI.onDownloadFinished(() => {
   setTimeout(() => {
-    document.getElementById('waitingLabel').textContent = language.waiting
+    document.getElementById('waitingLabel').textContent = 'Finished downloading'
     document.getElementById('dlButton').removeAttribute('disabled')
+    document.getElementsByClassName('postDownloadActions')[0].style.display = 'block'
   }, 1000)
 })
 

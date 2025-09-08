@@ -54,6 +54,11 @@ body {
 
 .right {display: none;} /* Until this is used or needed it will remain disabled */
 
+
+.postDownloadActions {
+	display: none;
+}
+
 h1 {
 	text-align: left;
 }
