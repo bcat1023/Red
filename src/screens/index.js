@@ -63,6 +63,8 @@ function downloadStart() {
     return
   }
 
+  document.getElementsByClassName('postDownloadActions')[0].style.display = 'hidden'
+
   window.electronAPI.sendStartDownload(videoURL.replace(/&list.*/gm, ''), destination, 'mp3', 'ord')
   document.getElementById('dlButton').setAttribute('disabled', true)
   document.getElementById('waitingLabel').textContent = language.downloading
