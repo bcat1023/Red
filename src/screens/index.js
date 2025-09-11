@@ -9,6 +9,7 @@ document.getElementById('resetButton').addEventListener('click', () => page('set
 document.getElementById('pageNext-1').addEventListener('click', () => page('setUrl'))
 document.getElementById('dlButton').addEventListener('click', () => page('setDownloading'))
 
+let environment;
 window.onload = async () => {
   language = await window.electronAPI.sendGetLanguage()
 
@@ -52,6 +53,23 @@ window.electronAPI.onRecieveProgress((_event, prog) => {
 window.electronAPI.onRecieveDirectory((_event, path) => {
   document.getElementById('inputLocation').value = path
 })
+
+environment;
+function getEnvironment() {
+  return new Promise((resolve) => {
+    resolve(window.electronAPI.sendGetEnvironment())
+  })
+}
+async function setEnvironmentInRender() {
+  environment = await getEnvironment()
+  if (environment === 'production') {
+    return
+  } else {
+    console.log(`Red is running in a ${environment} environment, checks for empty input's will not be ran`)
+    alert(`Red is running in a ${environment} environment, checks for empty input's will not be ran`)
+  }
+}
+setEnvironmentInRender()
 
 /* Listeners' functions */
 function downloadStart() {
@@ -103,7 +121,7 @@ function page(pageCall) {
   }
   if (pageCall === 'setUrl') {
     let destination = document.getElementById('inputLocation').value
-    if (destination === '') {
+    if (destination === '' && environment !== 'development') {
       return alert('You must set a file destination')
     } else {
       changeCard(2)
@@ -114,7 +132,7 @@ function page(pageCall) {
   }
   if (pageCall === 'setDownloading') {
     let destination = document.getElementById('inputURL').value
-    if (destination === '') {
+    if (destination === '' && environment !== 'development') {
       return alert('You must set a URL')
     } else {
       if (destination.search(/(youtube|youtu)\.(com|be)/gm) === -1) {
