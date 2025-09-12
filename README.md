@@ -34,3 +34,6 @@ Select all songs in Finder, then right click them and open in Music. This will i
 Unzipped package can be found in `out` directory and distributables in `out/make` directory.
 
 *Windows and Linux are no longer supported platforms, compiled binaries will only be available for MacOS, however a port to Windows or Linux should be possible*
+
+# Bumping version
+Red will pull the version tag from the package.json file in the root, just update the version there and abbriviet any words
