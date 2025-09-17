@@ -5,6 +5,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   sendStartDownload: (videoURL, path, ext, order) => ipcRenderer.send('startDownload', videoURL, path, ext, order),
   sendClickedSettings: (videoURL) => ipcRenderer.send('clickedSettings', videoURL),
   sendChangedMetadata: (metadata) => ipcRenderer.send('recieveMetadata', metadata),
+  sendGetEnvironment: (environment) => ipcRenderer.invoke('getEnvironment', environment),
   sendOnlineArt: (artURL) => ipcRenderer.send('receiveOnlineArt', artURL),
   sendChangeStyle: (style) => ipcRenderer.send('changeStyle', style),
   sendLanguage: (lang) => ipcRenderer.send('recieveLanguage', lang),
@@ -23,5 +24,5 @@ contextBridge.exposeInMainWorld('electronAPI', {
   onRecieveMetadata: (callback) => ipcRenderer.on('sendMetadata', callback),
   onRecieveItems: (callback) => ipcRenderer.on('sendItems', callback),
 	onRecieveProgress: (callback) => ipcRenderer.on('sendProgress', callback),
-  onRecieveArt: (callback) => ipcRenderer.on('sendArt', callback),
+  onRecieveArt: (callback) => ipcRenderer.on('sendArt', callback)
 })

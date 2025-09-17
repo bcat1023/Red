@@ -17,17 +17,85 @@
 <body>
 	<div id="titleBarContainer">
 		<div id="titleBar" class="draggable">
-			<button type="button" id="aboutButton" class="non-draggable act-button about-button"><i class="nf nf-oct-info"></i></button>
+			<button type="button" id="aboutButton" class="non-draggable act-button about-button"><i
+					class="nf nf-oct-info"></i></button>
 			<span class="draggable header">Red</span>
 		</div>
 	</div>
+	<div class="card cardDefault" id="card0">
+		<div class="flexBox">
+			<div class="left side">
+				<h1>Red Music Hoarder</h1>
+				<h2>This is a alpha release, this program is subject to change and will not check for updates
+					automatically</h2>
+				<button type="button" id="pageNext-0" class="act-button"> Next <i class="nf nf-fa-arrow_right"> </i>
+				</button>
+			</div>
+			<div class="right side">
+			</div>
+		</div>
+	</div>
+	<div class="card" id="card1">
+		<div class="flexBox">
+			<div class="left side">
+				<h1>Please set a destination folder for your music</h1>
+				<div class="loc-container">
+					<input type="text" placeholder="File Destination" id="inputLocation" class="input-location"></input>
+					<button type="button" id="locButton" class="act-button"><i
+							class="nf nf-custom-folder_oct"></i></button>
+				</div>
+				<br>
+				<button type="button" id="pageNext-1" class="act-button"> Next <i class="nf nf-fa-arrow_right"> </i>
+				</button>
+				<p>In future updates, Red will optionally manage and store your music for you</p>
+			</div>
+			<div class="right side"></div>
+		</div>
+	</div>
+	<div class="card" id="card2">
+		<div class="flexBox">
+			<div class="left side">
+				<h1>Paste in the URL of your music now</h1>
+				<input type="text" placeholder="Song / Album URL" id="inputURL" class="input-url"></input>
+				<br>
+				<br>
+				<button type="button" id="backButton" class="act-button"> Go Back <i class="nf nf-fa-arrow_left">
+					</i></button>
+				<button type="button" id="dlButton" class="act-button">Start Download <i
+						class="nf nf-fa-download"></i></button>
+				<p>In future updates, Red will show the metadata on individual songs before you download them and
+					progress on individual tracks</p>
+			</div>
+			<div class="right side">
+			</div>
+		</div>
+	</div>
+	<div class="card" id="card3">
+		<div class="flexBox">
+			<div class="left side">
+				<h1>Red is now downloading your music...</h1>
+				<span class="waiting-label" id="itemLabel">Red is currently inspecting and preparing to download the
+					URL...</span>
+				<br>
+				<span class="waiting-label"
+					id="waitingLabel"><!-- This is where the download percent is displayed --></span>
+				<br><br>
+				<div class="postDownloadActions">
+					<button type="button" id="resetButton" class="act-button"> Start Over <i class="nf nf-fa-repeat">
+						</i>
+				</div>
+				</button>
+			</div>
+			<div class="right side"></div>
+		</div>
+	</div>
 	<section class="container">
-		<span class="waiting-label" id="itemLabel">Red</span>
+		<span class="waiting-label" id="itemLabel"></span>
 		<span class="waiting-label" id="waitingLabel"></span>
 		<div class="button-container">
 			<button type="button" id="dlButton" class="act-button"><i class="nf nf-fa-download"></i></button>
 			<input type="text" id="inputURL" class="input-url"></input>
-			<!--<button type="button" id="setButton" class="act-button"><i class="nf nf-md-cog"></i></button>-->
+			<-!--<button type="button" id="setButton" class="act-button"><i class="nf nf-md-cog"></i></button>->
 		</div>
 		<div class="bottom-container">
 			<div class="loc-container">

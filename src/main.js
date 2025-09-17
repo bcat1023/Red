@@ -56,6 +56,18 @@ app.whenReady().then(async () => {
   ipcMain.on('recieveMetadata', (_event, metadata) => { changedMetadata = metadata })
   ipcMain.on('reloadMetadata', () => { SetWin.webContents.send('sendMetadata', metadata); customArt = null })
 
+  ipcMain.handle('getEnvironment', () => {
+    let environment
+    if (app.isPackaged == true) {
+      environment = 'production'
+    } if (app.isPackaged == false) {
+      environment = 'development'
+      console.log(`Red is running in a ${environment} environment, checks for empty input's will not be ran`)
+    }
+    console.log(app.isPackaged)
+    return environment
+  })
+
   ipcMain.on('chooseDirectory', () => {
     dialog.showOpenDialog(MainWin, {
       title: language.seldlfolder,
@@ -132,10 +144,10 @@ app.whenReady().then(async () => {
 /* Window creation */
 const createMain = () => {
   MainWin = new BrowserWindow({
-    width: 800,
-    minWidth: 400,
+    width: 1100,
+    minWidth: 880,
     height: 600,
-    minHeight: 300,
+    minHeight: 480,
     titleBarStyle: 'hidden',
     titleBarOverlay: {
       color: '#00000000',
@@ -276,12 +288,12 @@ const getStyles = () => {
 }
 
 const getMetadata = async (videoURL) => {
-  
+
 }
 
 /* General functions */
 const startDownload = async (_event, videoURL, dirPath, ext, order) => {
-  arguments = ['-t', 'sleep', '--ppa', "EmbedThumbnail+ffmpeg_o:-c:v mjpeg -vf crop=\"'if(gt(ih,iw),iw,ih)':'if(gt(iw,ih),ih,iw)'\"", '-x', '--ffmpeg-location', `${path.join(bin, 'ffmpeg')}`, '--audio-format', 'mp3','--embed-metadata', '--embed-thumbnail', `${videoURL}`, '-P', `${dirPath}`, '-o', '%(track)s.%(ext)s', '--parse-metadata', 'uploader:(?P<album_artist>.+)']
+  arguments = ['-t', 'sleep', '--ppa', "EmbedThumbnail+ffmpeg_o:-c:v mjpeg -vf crop=\"'if(gt(ih,iw),iw,ih)':'if(gt(iw,ih),ih,iw)'\"", '-x', '--ffmpeg-location', `${path.join(bin, 'ffmpeg')}`, '--audio-format', 'mp3', '--embed-metadata', '--embed-thumbnail', `${videoURL}`, '-P', `${dirPath}`, '-o', '%(track)s.%(ext)s', '--parse-metadata', 'uploader:(?P<album_artist>.+)']
   console.log(arguments)
   YtDlpWrap.exec(arguments)
     .on('ytDlpEvent', (eType, eData) => {
@@ -291,7 +303,7 @@ const startDownload = async (_event, videoURL, dirPath, ext, order) => {
       if (eType === 'download' && eData.slice(1, 4) !== 'Des' && eData.slice(4, 5) === '.') {
         MainWin.webContents.send('sendProgress', eData.slice(1, 4))
       }
-      if(eType === 'download' && eData.slice(1,18) === 'Downloading item ') {
+      if (eType === 'download' && eData.slice(1, 18) === 'Downloading item ') {
         MainWin.webContents.send('sendItems', eData.slice(18, Number.POSITIVE_INFINITY))
       }
     })
